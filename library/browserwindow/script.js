@@ -1,3 +1,6 @@
+const timing = require('timing-function');
+window.$ = require("jquery");
+const { ipcRenderer } = require('electron')
 function isElectron() {
     // Renderer process
     if (typeof window !== 'undefined' && typeof window.process === 'object' && window.process.type === 'renderer') {
@@ -30,6 +33,7 @@ if (test) {
 function onResize() {
     var position = $("#browserview").offset()
     return ([position.left, position.top, $("#browserview").width(), $("#browserview").height()])
+
 }
 var fullscreen = [false, false]
 function onFullscreen(bool) {
@@ -55,19 +59,91 @@ $("#toppart").on("pointerleave", function () {
     main.animateView()
 })
 var tabbar = $("#tabbar")
+
+const ginputhandler = {
+    keydown: function (e) {
+
+        if (e.keyCode == 13) {
+            main.browser.navigate(main.temp.activetab, $(this).val())
+            $(this).blur()
+        }
+    },
+    pointerdown: function (e) {
+        $(this).focus()
+    },
+    focus: function (e) {
+        $(this).parent().parent()[0].inputactive = true
+    },
+    blur: function (e) {
+        $(this).parent().parent().removeClass("focus animate dragging")
+        $(this).parent().parent()[0].inputactive = false
+    }
+}
+const ginputphhandler = {
+    pointerdown: function (e) {
+
+    },
+    pointerup: function (e) {
+        if ($(this).parent().parent().hasClass("dragging")) {
+            $(this).parent().parent().removeClass("dragging animate")
+        } else if (this.focusable == true) {
+            console.log("ananke")
+            $(this).parent().parent().addClass("focus")
+            $(this).parent().children(".g-input").focus()
+        }
+
+
+    },
+}
+const faviconhandler = {
+    pointerdown: function (e) {
+        window["tempfaviconmouseloc"] = [e.clientX, e.clientY]
+        window["tempfaviconuuid"] = $(this).parent().attr("uuid")
+    },
+    pointerup: function (e) {
+
+    }
+}
+$(window).on("pointerup", function (e) {
+    if (!(window["tempfaviconmouseloc"] && window["tempfaviconuuid"])) return
+    if (e.clientX == window["tempfaviconmouseloc"][0] && e.clientY == window["tempfaviconmouseloc"][1]) {
+        console.log("Aas")
+        const uuid = window["tempfaviconuuid"]
+        destroyTabRep(uuid)
+        main.destroyTab(uuid)
+    } else {
+        console.log([e.clientX, e.clientY], window["tempfaviconmouseloc"])
+    }
+})
 function createTabRep(uuid) {
-    $("#tabbar").stop
-    tabbar.append(`<div class="tabrepresentative created" uuid="${uuid}"><p class="tabtitle">New Tab</p></div>`)
+    tabbar.append(`
+    <div class="tabrepresentative created" uuid="${uuid}">
+        <div class="g-favicon">
+            <div class="g-closetab"></div>
+            <img class="favicon" src="">
+        </div>
+        <div class="title">
+            <p class="tabtitle">New Tab</p>
+        </div>
+        <div class="active">
+            <div class="urlinput g-inputph">about:newtab</div>
+            <input class="urlinput g-input" type="url">
+        </div>
+    </div>
+    `)
     dragdroptab.refreshBind()
     updateTabBarHidden()
     main.animateView()
     updateTabSize()
-    //$("#tabbar").animate({ scrollLeft: $(`.tabrepresentative[uuid="${uuid}"]`).position().left }, 300);
 
+}
+function getTabRep(uuid) {
+    return tabbar.children(`.tabrepresentative[uuid="${uuid}"]`).eq(0)
 }
 function destroyTabRep(uuid) {
     const tab = $(`#tabbar .tabrepresentative[uuid="${uuid}"]`).eq(0)
     tab.css("animation", "tabclosing 0.3s ease-out")
+    updateTabSize(true)
     setTimeout(() => {
         tab.remove()
         updateTabBarHidden()
@@ -75,33 +151,70 @@ function destroyTabRep(uuid) {
     }, 300);
 }
 //var TabBarHidden = { new: true, old: true }
-function updateTabSize() {
+function updateTabSize(oneless) {
+    var size = (!!oneless) ? $("#tabbar").children().length - 1 : $("#tabbar").children().length
     setTimeout(() => {
         $(":root").css("--tabsize", dragdroptab.gettabsize() + "px")
-    }, 0);
+        $(":root").css("--msideflex", size)
 
+    }, 0);
+    updateTabsGradient()
+    setTimeout(() => {
+        updateTabsGradient()
+    }, 300);
 }
 function updateTabBarHidden() {
+    const easing = timing.get(0.16, 1, 0.3, 1)
+    const lefte = Math.round(-tabbar.width()) + Math.round(tabbar.prop("scrollWidth"))
+    const lete = tabbar.scrollLeft()
+    tabbar.stop()
+    $({ x: 0 }).animate({ x: 1 }, {
+        step: function () {
+            tabbar.scrollLeft(lete + (easing(this.x) * (lefte - lete)))
+        }, duration: 300
+    });
+
     // TabBarHidden.new = ($("#tabbar").children().length <= 1)
     //  if (TabBarHidden.new != TabBarHidden.old) { main.animateView(() => { }); console.log("ANIMATON START") }
     if ($("#tabbar").children().length <= 1) $("#tabbar").addClass("hidden");
     else $("#tabbar").removeClass("hidden");
     //  TabBarHidden.old = TabBarHidden.new
 }
+function updateTabsGradient() {
+    const [boxsize, contentsize, maxscroll, scroll] = [Math.round(tabbar.width()), Math.round(tabbar.prop("scrollWidth")), Math.round(-tabbar.width()) + Math.round(tabbar.prop("scrollWidth")), Math.round(tabbar.scrollLeft())]
+    console.log(boxsize, contentsize, maxscroll, scroll)
+    const [lsize, rsize] = [(scroll < 100) ? scroll / 2 : 50, ((maxscroll - scroll) < 100) ? (maxscroll - scroll) / 2 : 50]
+    tabbar.css("--mask", `linear-gradient(90deg, transparent 0%, white ${lsize}px, white calc(100% - ${rsize}px), transparent 100%)`)
+}
 var dragdroptab = {
     selectedtab: undefined,
     dragging: false,
     gettabsize: function () {
-        var ans = $("#tabbar").width() / $("#tabbar").children(".tabrepresentative").length;
-        return (ans > 100) ? ans : 100
+        const tabs = $("#tabbar").children(".tabrepresentative")
+        const [w0, w1] = [tabs.eq(0).width(), tabs.eq(1).width()]
+        return (w0 > w1 ? w1 : w0)
     },
     goina: 0,
     prevAll: undefined,
     nextAll: undefined,
     refreshBind: () => {
-        $("#tabbar .tabrepresentative").unbind("pointerdown", tabOnClick)
-        $("#tabbar .tabrepresentative").bind("pointerdown", tabOnClick)
+        $("#tabbar .tabrepresentative").unbind("pointerdown", tabonpointerdown)
+        $("#tabbar .tabrepresentative").bind("pointerdown", tabonpointerdown)
+        $("#tabbar .tabrepresentative").unbind("click", tabonclick)
+        $("#tabbar .tabrepresentative").bind("click", tabonclick)
         $("#tabbar .tabrepresentative").bind("dragstart", onDrag)
+        $("#tabbar .tabrepresentative .g-input").unbind()
+        $("#tabbar .tabrepresentative .g-inputph").unbind()
+        Object.keys(ginputhandler).forEach(element => {
+            $("#tabbar .tabrepresentative .g-input").bind(String(element), ginputhandler[element])
+        });
+        Object.keys(ginputphhandler).forEach(element => {
+            $("#tabbar .tabrepresentative .g-inputph").bind(String(element), ginputphhandler[element])
+        });
+        Object.keys(faviconhandler).forEach(element => {
+            $("#tabbar .tabrepresentative .g-favicon").bind(String(element), faviconhandler[element])
+        });
+
     },
     lastscroll: 0
 }
@@ -109,14 +222,27 @@ function onDrag(e) {
     if (dragdroptab.dragging) e.preventDefault()
     // alert("dsgf")
 }
-function tabOnClick(e) {
+function tabonclick(e) {
+
+}
+function tabonpointerdown(e) {
+    $(this).children(".active").children(".g-inputph")[0].focusable = $(this).hasClass("selected")
     $(this).removeClass("dragging animate created")
-    this.mousedownpos = e.clientX
-    this.mousedownpos2 = e.clientY
-    dragdroptab.dragging = false
-    dragdroptab.selectedtab = this
-    dragdroptab.lastscroll = $("#tabbar").scrollLeft()
-    showTabRep($(this).attr("uuid"))
+    if (!this.inputactive) {
+        this.mousedownpos = e.clientX
+        this.mousedownpos2 = e.clientY
+        dragdroptab.dragging = false
+        dragdroptab.selectedtab = this
+        dragdroptab.lastscroll = $("#tabbar").scrollLeft()
+    }
+
+    if (menu == "browser") {
+        showTabRep($(this).attr("uuid"))
+
+    } else {
+        $("#tabsview .tabs").children(`.tab[uuid="${$(this).attr("uuid")}"]`).click()
+    }
+
 }
 $(window).on("pointerup", function (e) {
     if (dragdroptab.dragging) {
@@ -124,7 +250,7 @@ $(window).on("pointerup", function (e) {
 
         $(selected).addClass("animate")
         setTimeout(() => {
-            $(selected).css("transform", `translateX(${dragdroptab.goina * dragdroptab.gettabsize()}px)`)
+            $(selected).css("transform", `translateX(${dragdroptab.goina * (dragdroptab.gettabsize() + 10)}px)`)
             setTimeout(() => {
                 var index = $()
                 var neworder = ""
@@ -139,7 +265,6 @@ $(window).on("pointerup", function (e) {
                         $(this).prop("style", "")
                         $(this).removeClass("dragging animate created")
                         neworder += $(this).prop("outerHTML")
-                        //console.log($(this).prop("outerHTML"))
                     })
                     $(selected).prop("style", "")
                     $(selected).removeClass("dragging animate created")
@@ -173,7 +298,8 @@ $(window).on("pointerup", function (e) {
                 } else {
 
                 }
-                if (neworder != "") { $("#tabbar").html(neworder); main.temp.tabthumbnails.sort() }
+                if (neworder != "") { $("#tabbar").html(neworder); main.temp.tabthumbnails.sort() } else {
+                }
                 dragdroptab.goina = 0
                 $("#tabbar").removeClass("draganim")
                 dragdroptab.refreshBind()
@@ -192,6 +318,7 @@ function tabDraggedOut() {
     })
 }
 $("#tabbar").scroll(function () {
+    updateTabsGradient()
     if (dragdroptab.dragging) onPointerMove(lastevent)
 })
 
@@ -212,6 +339,8 @@ function onPointerMove(e) {
         dragdroptab.goina = ina
         dragdroptab.prevAll = $(dragdroptab.selectedtab).prevAll()
         dragdroptab.nextAll = $(dragdroptab.selectedtab).nextAll()
+        var trsize = dragdroptab.gettabsize()
+        trsize = $(dragdroptab.selectedtab).width() + 10
         if (ina == 0) {
             $(dragdroptab.selectedtab).nextAll().css("transform", "")
             $(dragdroptab.selectedtab).prevAll().css("transform", "")
@@ -219,10 +348,10 @@ function onPointerMove(e) {
         }
         else if (ina > 0) {
             $(dragdroptab.selectedtab).nextAll().slice(ina).css("transform", "")
-            $(dragdroptab.selectedtab).nextAll().slice(0, ina).css("transform", `translateX(${-dragdroptab.gettabsize()}px)`)
+            $(dragdroptab.selectedtab).nextAll().slice(0, ina).css("transform", `translateX(${-trsize}px)`)
         } else if (ina < 0) {
             $(dragdroptab.selectedtab).prevAll().slice(-ina).css("transform", "")
-            $(dragdroptab.selectedtab).prevAll().slice(0, -ina).css("transform", `translateX(${dragdroptab.gettabsize()}px)`)
+            $(dragdroptab.selectedtab).prevAll().slice(0, -ina).css("transform", `translateX(${trsize}px)`)
         }
     }
     if (!dragdroptab.dragging && dragdroptab.selectedtab != undefined) {
@@ -240,11 +369,16 @@ function onPointerMove(e) {
     }
 
 }
-function showTabRep(uuid) {
+function showTabRep(uuid, noactivate) {
+    $("#tabbar .tabrepresentative").removeClass("clickinside")
+    $(`#tabbar .tabrepresentative[uuid="${uuid}"]`).addClass("clickinside")
+
     $("#tabbar .tabrepresentative").removeClass("selected")
     $(`#tabbar .tabrepresentative[uuid="${uuid}"]`).addClass("selected")
-    main.showTab(uuid)
-    main.temp.activetab = uuid
+    if (!noactivate) {
+        main.showTab(uuid)
+        main.temp.activetab = uuid
+    }
 
 }
 function MENUBARBORDERRADIUSINIT(param) {
@@ -329,6 +463,31 @@ function MainEvalMono(eval, callback) {
     ipcRenderer.send('evaluatemono', String(String(eval) + "_?").replace(")_?", `, "${now}")`), now)
     return ("sent")
 }
+const mainoneway = {
+    pageTitleUpdated: function (uuid, title, explicit) {
+        console.log(`${uuid} changed title to ${title}`)
+        getTabRep(uuid).children(".title").children("p.tabtitle").html("")
+        getTabRep(uuid).children(".title").children("p.tabtitle").text(title)
+    },
+    pageURLUpdated: function (uuid, url) {
+        console.log(`${uuid} changed url to ${url}`)
+        getTabRep(uuid).children(".active").children(".g-input").val(url)
+        try {
+            var hostname = (new URL(url)).host
+            hostname = hostname.startsWith("www.") ? hostname.slice(4) : hostname
+            getTabRep(uuid).children(".active").children(".g-inputph").html("")
+            getTabRep(uuid).children(".active").children(".g-inputph").text(hostname)
+
+        } catch (error) {
+            getTabRep(uuid).children(".active").children(".g-inputph").html("")
+            getTabRep(uuid).children(".active").children(".g-inputph").text(url)
+        }
+    },
+    pageFaviconUpdated: function (uuid, data) {
+        console.log(`${uuid} changed favicon to ${data}`)
+        getTabRep(uuid).children(".g-favicon").children(".favicon").attr("src", data)
+    }
+}
 const main = {
     generateUUID: function (callback) { MainEval(() => { return generateUUID() }, (answer) => { if (typeof callback == "function") callback(answer) }) },
     createWindow: function (callback) { MainEval(() => { return createWindow() }, (answer) => { if (typeof callback == "function") callback(answer) }) },
@@ -372,26 +531,49 @@ const main = {
     temp: {
         tabthumbnails: {
             nasty: {}, sorted: {}, sort: () => {
-                sorted = {}
+                main.temp.tabthumbnails.sorted = {}
                 $("#tabbar").children(".tabrepresentative").each((index, element) => {
                     const uuid = $(element).attr("uuid")
                     main.temp.tabthumbnails.sorted[uuid] = (main.temp.tabthumbnails.nasty[uuid] == undefined) ? "white" : main.temp.tabthumbnails.nasty[uuid]
                 });
             }, selecttab: (selectedtab) => {
                 const tab = $(`#tabsview .tabs .tab[uuid="${selectedtab}"]`)
+                tab.addClass("selected")
                 tab.css("transition", "0s")
                 tab.css("transform", "zoom(1)");
                 setTimeout(() => {
                     tab.css("animation", "")
                     tab.css({ "--tranx": ((browserview.width() * 2 / 5) - tab.offset().left) + "px", "--trany": ((browserview.height() * 2 / 5) - tab.offset().top) + browserview.offset().top + "px" })
                     tab.css("animation", "var(--tabopen)")
+                    showTabRep(selectedtab, true)
                     setTimeout(() => {
+                        main.showTab(selectedtab)
                         showTabRep(selectedtab)
-                        //main.startRendering(UUID)
+
+                        setTimeout(() => {
+                            $("#tabsview .tabs").eq(0).html("")
+                        }, 50);
                     }, 450);
                     menu = "browser"
                 }, 0);
 
+            }, opentabs: () => {
+                main.browser.captureTab(main.temp.activetab, (thumbnail) => {
+                    main.browser.generateThumbnails(main.temp.tabthumbnails.sorted)
+                    const tab = $(`#tabsview .tabs .tab[uuid="${main.temp.activetab}"]`)
+                    tab.addClass("selected")
+                    setTimeout(() => {
+                        tab.removeClass("selected")
+                        tab.css("animation", "")
+
+                    }, 480);
+                    tab.css("animation", "")
+                    tab.css({ "--tranx": ((browserview.width() * 2 / 5) - tab.offset().left) + "px", "--trany": ((browserview.height() * 2 / 5) - tab.offset().top) + browserview.offset().top + "px" })
+                    tab.css("animation", "var(--tabclose)")
+                    setTimeout(() => {
+                        main.stopRendering(UUID)
+                    }, 20);
+                })
             }
         },
         activetab: "",
@@ -431,7 +613,7 @@ $("#g-newtab").click(function () {
             main.moveTab(tuuid, UUID)
             createTabRep(tuuid)
             showTabRep(tuuid)
-            main.browser.navigate(tuuid, "https://www.google.com")
+            main.browser.navigate(tuuid, "about:newtab")
         })
 
     }
@@ -443,33 +625,13 @@ $("#g-tabs").click(function () {
     if (test) {
     } else {
         if (menu == "browser") {
-            main.browser.captureTab(main.temp.activetab, (thumbnail) => {
-                main.browser.generateThumbnails(main.temp.tabthumbnails.sorted)
-                const tab = $(`#tabsview .tabs .tab[uuid="${main.temp.activetab}"]`)
-                tab.css("animation", "")
-                tab.css({ "--tranx": ((browserview.width() * 2 / 5) - tab.offset().left) + "px", "--trany": ((browserview.height() * 2 / 5) - tab.offset().top) + browserview.offset().top + "px" })
-                tab.css("animation", "var(--tabclose)")
-                setTimeout(() => {
-                    main.stopRendering(UUID)
-                }, 20);
-            })
+            main.temp.tabthumbnails.opentabs()
             menu = "tabsview"
         } else if (menu == "tabsview") {
-            try {
-                const tab = $(`#tabsview .tabs .tab[uuid="${main.temp.activetab}"]`)
-                tab.css("animation", "")
-                tab.css({ "--tranx": ((browserview.width() * 2 / 5) - tab.offset().left) + "px", "--trany": ((browserview.height() * 2 / 5) - tab.offset().top) + browserview.offset().top + "px" })
-                tab.css("animation", "var(--tabopen)")
-                setTimeout(() => {
-                    main.startRendering(UUID)
-                }, 450);
-                menu = "browser"
-            } catch (error) {
-                main.startRendering(UUID)
-                menu = "browser"
-            }
-
+            main.temp.tabthumbnails.selecttab(main.temp.activetab)
+            menu = "browser"
         }
+        $("body").attr("menu", menu)
 
     }
 
@@ -485,19 +647,13 @@ $("#g-max").click(function () {
 $("#g-min").click(function () {
     main.window.minimize()
 })
-$("#g-input").on("keydown", function (e) {
-    if (e.keyCode == 13) {
-        main.browser.navigate(main.temp.activetab, $(this).val())
-    }
-})
-$("#g-input").on("focus", function (e) {
-    $("#g-inputph").removeClass("notfocus")
-})
-$("#g-input").on("blur", function (e) {
-    $("#g-inputph").addClass("notfocus")
 
-})
 RefreshUUID()
 function isURL(input) {
-    return String(input).match(new RegExp(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi))
+    return !!String(input).match(new RegExp(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi))
 }
+
+$(window).on("resize", () => {
+    updateTabsGradient()
+
+})

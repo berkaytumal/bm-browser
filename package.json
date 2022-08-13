@@ -14,7 +14,6 @@
   },
   "license": "ISC",
   "dependencies": {
-    "electron-acrylic-window": "^0.5.11",
     "ewc": "github:23phy/ewc",
     "jquery": "^3.6.0",
     "request": "^2.88.2",

@@ -1,6 +1,6 @@
 const path = require('path');
 const { app, BrowserView, ipcMain, nativeTheme } = require('electron')
-const { BrowserWindow } = require("electron-acrylic-window")
+//const { BrowserWindow } = require("electron-acrylic-window")
 //const composition = require("ewc");
 const request = require('request').defaults({ encoding: null });
 const fs = require("fs")
@@ -11,7 +11,6 @@ function UpdateTheme() {
         UpdateWindowTheme(windows[element])
     });
 }
-
 nativeTheme.on('updated', UpdateTheme)
 function UpdateWindowTheme(window) {
     //composition.custom(window, 3, 0x000000)
@@ -26,7 +25,7 @@ function createWindow() {
         title: "JackDaw",
         /*icon: "assets/logocircle.png",*/
         frame: false,
-        backgroundColor: '#00000000',
+        backgroundColor: '#202020',
 
         webPreferences: {
             contextIsolation: false,
@@ -53,15 +52,6 @@ function createWindow() {
             resizeViewport(window)
         }
     });
-    /* const view = new BrowserView()
-     window.setBrowserView(view)
-     view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
-     view.webContents.loadURL('https://electronjs.org')*/
-
-    /*  if (url == undefined) return
-      if (url == "url") return*/
-    //window.loadURL(url);
-
     return uuid
 }
 function createWindo2() {
@@ -72,7 +62,6 @@ function createWindo2() {
         minWidth: 800,
         minHeight: 600,
         title: "JackDaw",
-        /*icon: "assets/logocircle.png",*/
         titleBarStyle: "hidden",
         webPreferences: {
             contextIsolation: false,
@@ -171,7 +160,6 @@ function createTab() {
 const TabHandlers = {
     windowOpenHandler: function (details) {
         const tab = createTab()
-
         return { action: "allow" }
     },
     nativeHandlers: {

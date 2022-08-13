@@ -1,10 +1,5 @@
-@font-face {
-    font-family: Inter;
-    src: url(../fonts/Inter.ttf);
-}
-
 * {
-    font-family: Inter;
+    font-family: "Segoe UI Variable Display";
 }
 
 body {
@@ -19,14 +14,26 @@ body.fullscreen #topbar {
     --appbg: var(--opaquebg) !important;
 }
 
+body.fullscreen {
+    background: black;
+}
+
+body.fullscreen * {
+    -webkit-app-region: none !important;
+}
+
 html {}
 
 :root {
     --tc: calc(var(--textcolor) * 255);
     --tcr: calc(255 - var(--tc));
     --easing: cubic-bezier(0.16, 1, 0.3, 1);
-    --tabclose: 0.5s var(--easing) none zoomout;
-    --tabopen: 0.5s var(--easing) none zoomin;
+    --tabclose: 0.5s var(--easing) forwards zoomout;
+    --tabopen: 0.5s var(--easing) forwards zoomin;
+    --msideflex: 1;
+    --tabheight: 30px;
+    --tabscale: 1;
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -36,10 +43,10 @@ html {}
         --textcolor: 1;
         --topbarbg: transparent;
         --urlinputbg: transparent;
-        --tabbarbg: rgb(0, 0, 0, 0.15);
-        --tabbg: transparent;
-        --tabhoverbg: rgb(0, 0, 0, 0.075);
-        --tabselectedbg: #202020;
+        --tabbarbg: transparent;
+        --tabbg: rgba(255, 255, 255, 0.05);
+        --tabhoverbg: rgba(255, 255, 255, 0.075);
+        --tabselectedbg: rgb(255, 255, 255, 0.1);
         --appbg: rgba(0, 0, 0, 0.2);
         --titlebarbtnhover: rgb(0, 0, 0, 0.1);
         --titlebarbtnpress: rgb(0, 0, 0, 0.2);
@@ -109,10 +116,11 @@ html {}
 }
 
 #topbar .lside *,
-#topbar .mside *,
 #topbar .rside * {
     -webkit-app-region: none;
 }
+
+
 
 #navbar {
     -webkit-app-region: none;
@@ -120,7 +128,7 @@ html {}
     right: 0px;
     top: 0px;
     width: 138px;
-    height: 40px;
+    height: 50px;
     overflow: hidden;
 }
 
@@ -136,7 +144,7 @@ html {}
     float: left;
     position: relative;
     width: 46px;
-    height: 40px;
+    height: 50px;
 }
 
 #navbar div:not(.close) {
@@ -181,78 +189,166 @@ body.fullscreen #topbar {
     /* height: 0px;*/
 }
 
+#topbar .innercontent {
+    width: calc(100% - 138px);
+    height: 100%;
+    display: flex;
+
+}
+
 #topbar .lside,
 #topbar .mside,
 #topbar .rside {
     display: flex;
-    position: absolute;
+    position: relative;
+    float: left;
     top: 0px;
     height: 50px;
     background: transparent !important;
+    flex-grow: 1;
 }
 
 #topbar .lside {
     left: 0px;
-    width: calc(50% - 250px);
+    width: min-content;
 }
 
 #topbar .mside {
-    left: calc(50% - 250px);
+    transition: flex 0.3s;
+    left: 0px;
     width: 500px;
+    flex-grow: calc((var(--msideflex) * 5) - 4.5);
 }
 
 #topbar .rside {
-    left: calc(100% - (50% - 250px));
-    width: calc(50% - 250px - 138px) !important;
+    left: 0px;
+    width: min-content;
     overflow: hidden;
 }
 
 #topbar .mside .urlinput {
-    transition: 0.3s ease-out;
+    overflow: hidden;
+    transition: 0.3s var(--easing);
     position: absolute;
-    top: 12.5px;
-    height: 25px;
+    left: 0px;
+    top: 0px;
+    height: 100%;
     width: 100%;
     border-radius: 10px;
     border-style: none;
     background: #2a2a2a;
     background: var(--urlinputbg);
     box-shadow: inset 0px 0px 2px rgb(125, 125, 125, 0.5);
-    color: rgba(var(--tc), var(--tc), var(--tc), 0.5);
-    cursor: default;
+    color: rgba(var(--tc), var(--tc), var(--tc), 1);
     outline: none;
     text-align: left;
     padding: 10px;
     box-sizing: border-box;
 }
 
-#g-input:not(:focus) {
+.tabrepresentative:not(:focus) .active .g-input {}
 
-    padding-left: 100px !important;
-    cursor: text !important;
+.tabrepresentative.focus .g-favicon {
+    left: -30px;
     opacity: 0;
+    pointer-events: none;
 }
 
-#g-input:focus {
+.tabrepresentative.focus .active.g-input {
     padding-left: 10px;
     cursor: text !important;
     opacity: 1;
 }
 
-#g-inputph {
+.g-inputph {
     padding-top: 3px !important;
-
+    font-size: 15px;
     text-align: center !important;
     background: transparent;
     box-shadow: none;
+}
+
+.tabrepresentative.focus .active .g-input {
+    padding-left: 10px;
+    cursor: text !important;
+    opacity: 1;
+}
+
+.tabrepresentative:not(.focus) .active .g-input {
+
+    padding-left: 50% !important;
+    cursor: default !important;
+    opacity: 0;
+
+
     pointer-events: none;
 }
 
-#g-inputph:not(.notfocus) {
-    text-indent: -200px;
+.tabrepresentative.focus .active .g-inputph {
+    text-indent: -70%;
+    opacity: 0;
 }
 
-#g-inputph.notfocus {}
+.tabrepresentative:not(.focus) .active .g-inputph {
+    opacity: 1;
+}
+
+.tabrepresentative .g-favicon {
+    z-index: 10;
+
+    transition: 0.5s var(--easing);
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.tabrepresentative .g-favicon:hover {
+    background: rgb(255, 255, 255, 0.1);
+
+}
+
+.tabrepresentative .g-favicon:active {
+    transition: 0s;
+    opacity: 0.5;
+}
+
+.tabrepresentative .g-favicon .g-closetab,
+.tabrepresentative .g-favicon .favicon {
+    transition: opacity 0.3s;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 20px;
+    height: 20px;
+}
+
+.tabrepresentative:hover .g-favicon .g-closetab {
+    opacity: 1 !important;
+    pointer-events: all !important;
+}
+
+.tabrepresentative:hover .g-favicon .favicon {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.tabrepresentative .g-favicon .g-closetab {
+    background: url("../images/closetab.png");
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tabrepresentative .g-favicon .favicon {
+    opacity: 1;
+    transform: scale(0.9);
+}
 
 #topbar .lside button,
 #topbar .rside button {
@@ -289,7 +385,7 @@ body.fullscreen #topbar {
 .spacerfill {
     -webkit-app-region: drag !important;
     width: 10px;
-    flex-grow: 1;
+    flex: 1;
 }
 
 .spacermargin {
@@ -301,19 +397,35 @@ body.fullscreen #topbar {
     display: none;
 }
 
-#tabbar {
+#tabbar.linv:not(.rinv) {
+    -webkit-mask: linear-gradient(90deg, transparent 0%, white 50px);
+}
 
+#tabbar.rinv:not(.linv) {
+    -webkit-mask: linear-gradient(90deg, white calc(100% - 50px), transparent 100%);
+}
+
+#tabbar.rinv.linv {
+    -webkit-mask: linear-gradient(90deg, transparent 0%, white 50px, white calc(100% - 50px), transparent 100%);
+}
+
+#tabbar {
+    -webkit-app-region: none;
+    border-radius: 10px;
+    -webkit-mask-size: 100% 100%;
     /*box-shadow: inset 0px 10px 10px -10px rgba(0, 0, 0, 0.2);*/
     transition: height 0.3s ease-out;
     display: flex;
     flex-flow: row nowrap;
     position: relative;
-    width: 100%;
-    height: 25px;
-
+    width: calc(100% + 10px);
+    height: 30px;
+    top: 10px;
     background: var(--tabbarbg);
     overflow-x: scroll;
     overflow-y: hidden;
+    -webkit-mask: var(--mask);
+    scroll-snap-align: end;
     /* inset 0px 10px 10px -10px rgba(0, 0, 0, 0.2);*/
 
 }
@@ -323,89 +435,146 @@ body.fullscreen #tabbar {
 }
 
 #tabbar.hidden {
-    height: 0px !important;
+    /*height: 0px !important;*/
 }
 
 @keyframes tabopening {
     from {
+        transform: scale(0.7);
         opacity: 0;
-        width: 0px;
+        flex: 0;
     }
 
     to {
+        transform: scale(1);
         opacity: 1;
-        width: var(--tabsize);
+        flex: 2;
+    }
+}
+
+@keyframes tabopeningbg {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+        flex: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+        flex: 1;
+    }
+}
+
+@keyframes tabclosingbg {
+    from {
+        transform: scale(1);
+        opacity: 1;
+        flex: 1;
+    }
+
+    to {
+        transform: scale(0.7);
+        opacity: 0;
+        flex: 0;
+        width: 0px;
+        min-width: 0px;
+
     }
 }
 
 @keyframes tabclosing {
     from {
+        transform: scale(1);
         opacity: 1;
-        flex-grow: 1;
+        flex: 2;
     }
 
     to {
+        transform: scale(0.7);
         opacity: 0;
-        flex-grow: 0;
+        flex: 0;
+        width: 0px;
+        min-width: 0px;
     }
 }
 
 #tabbar.draganim .tabrepresentative:not(.dragging) {
-    transition: transform 0.3s ease-out;
+    transition: transform 0.3s ease-out, background 0.3s;
 
 }
 
-#tabbar .tabrepresentative:hover::before {
-    opacity: 0.5;
-}
 
-#tabbar .tabrepresentative::before {
-    transition: opacity 0.3s ease-out;
-    content: "";
-    opacity: 0;
-
-    position: absolute;
-    background: url(../images/closetab.png);
-    background-size: 70%;
-    background-repeat: no-repeat;
-    background-position: center;
-    left: 5px;
-    top: 5px;
-    width: 15px;
-    height: 15px;
-    border-radius: 3px;
-}
-
-#tabbar .tabrepresentative::before:active {
-    background: url(../images/closetab.png), rgb(255, 255, 255, 0.6);
-
+#tabbar .tabrepresentative:not(.animate):not(.dragging):active {
+    transform: scale(0.95) !important;
 }
 
 #tabbar .tabrepresentative {
+    -webkit-app-region: none !important;
+    transition: 0.3s var(--easing);
     position: relative;
-    min-width: 100px;
+    min-width: 30px;
     --t: rgba(255, 255, 255, 0.04);
     --x: 1b1b1b;
-    --upshadow: inset 0px 10px 10px -10px rgba(0, 0, 0, 0.2);
-    box-shadow: inset -1px 0px 0px var(--t), inset 1px 0px 0px var(--t);
-    flex-grow: 1;
-    height: 100%;
+    flex: 1;
+    /*height: 100%;*/
+    height: calc(var(--tabheight) / var(--tabscale));
+    transform: scale(var(--tabscale));
     text-align: center;
     background: var(--x);
     background: var(--tabbg);
-    width: var(--tabsize);
+    /*width: var(--tabsize);*/
+    border-radius: 10px;
+    margin-right: 10px;
+    overflow: hidden;
+
+}
+
+#tabbar .tabrepresentative div.title,
+#tabbar .tabrepresentative div.active {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+#tabbar .tabrepresentative:not(.clickinside) div.title {
+    display: block;
+    pointer-events: all !important;
+}
+
+#tabbar .tabrepresentative:not(.clickinside) div.active {
+    display: none;
+    pointer-events: none;
+}
+
+#tabbar .tabrepresentative.clickinside div.title {
+    display: none;
+    pointer-events: none;
+}
+
+#tabbar .tabrepresentative.clickinside div.active {
+    display: block;
+    pointer-events: all !important;
 }
 
 #tabbar .tabrepresentative.created {
-    animation: tabopening 0.3s ease-out;
+    animation: tabopening 0.3s var(--easing);
 }
 
 #tabbar .tabrepresentative.dragging {
-    z-index: -1;
+    z-index: 101;
+    transition: all 0s, background 0.3s;
+}
+
+#tabbar .tabrepresentative.dragging:active {
+    background: rgb(255, 255, 255, 0.25) !important;
+
 }
 
 #tabbar .tabrepresentative.animate {
-    transition: transform 0.3s ease-out;
+    transition: transform 0.3s var(--easing);
 }
 
 #tabbar .tabrepresentative:hover {
@@ -440,24 +609,35 @@ body.fullscreen #tabbar {
 }
 */
 #tabbar .tabrepresentative.selected {
+    /*position: sticky !important;
+    left: 0px;
+    right: 10px;*/
+    flex: 2;
     box-shadow: none;
     background: var(--tabselectedbg);
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2), 1px 0px 0px var(--tabselectedbg), -1px 0px 0px var(--tabselectedbg);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
     z-index: 100;
+    min-width: 300px;
+
 }
 
 #tabbar .tabtitle {
     color: rgb(var(--tc), var(--tc), var(--tc));
-    font-size: 13px;
-    margin: 2.5px;
+    font-size: 15px;
+    margin: 4px;
     position: relative;
     left: 0px;
     top: 0px;
     box-shadow: none !important;
+    text-overflow: ellipsis;
+    max-height: 30px;
+    white-space: nowrap;
+    padding-left: 25px;
+    padding-right: 25px;
 }
 
 #browserview {
-    transition: 0.3s ease-out;
+    transition: 0.3s var(--easing);
     height: 10px;
     flex-grow: 1;
     background: var(--appbg);
@@ -486,11 +666,20 @@ body.fullscreen #tabbar {
     box-sizing: border-box;
 }
 
+body[menu="browser"] #tabsview .tab:not(.selected) {
+    opacity: 0;
+}
+
+body[menu="tabsview"] #tabsview .tab {
+    opacity: 1;
+}
+
 #tabsview .tab {
+    position: relative;
     --tranx: 0px;
     --trany: 0px;
     overflow: hidden;
-    transition: 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s !important;
     float: left;
     width: 20%;
     height: 20%;
@@ -505,12 +694,8 @@ body.fullscreen #tabbar {
     background-repeat: no-repeat !important;
 }
 
-#tabsview .tab.zoom1 {
-    animation: zoomin 0.3s ease-in reverse;
-}
-
-#tabsview .tab.zoom2 {
-    animation: zoomin 0.3s ease-out !important;
+#tabsview .tab.selected {
+    z-index: 99 !important;
 }
 
 
@@ -558,7 +743,7 @@ img {
 #tabsview .tab:active {
     transition: 0.1s;
     box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
-    transform: scale(0.95);
+    transform: scale(0.95) !important;
 }
 
 #appcontent {
