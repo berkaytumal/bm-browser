@@ -15,6 +15,8 @@ nativeTheme.on('updated', UpdateTheme)
 function UpdateWindowTheme(window) {
     //composition.custom(window, 3, 0x000000)
 }
+
+//Create a browser window and return its UUID
 function createWindow() {
     const uuid = generateUUID()
     var window = new BrowserWindow({
@@ -39,7 +41,6 @@ function createWindow() {
     window.webContents.once('did-finish-load', function () {
         window.show();
     });
-
     window.setMenuBarVisibility(false)
     window.loadFile("library/browserwindowcompact/index.html")
     window.on('resize', async function () {
@@ -54,6 +55,7 @@ function createWindow() {
     });
     return uuid
 }
+/*
 function createWindo2() {
     const uuid = generateUUID()
     var window = new BrowserWindow({
@@ -90,7 +92,8 @@ function createWindo2() {
         }
     });
     return uuid
-}
+}*/
+//Destroy a browser window from its UUID
 function destroyWindow(uuid) {
     windows[uuid].close()
     delete windows[uuid]
@@ -122,7 +125,7 @@ ipcMain.on("evaluateraw", function (event, arg, now) {
     var result = (eval(arg))
     event.sender.send('result' + now, result)
 })
-
+//UUID generator (not safe has to be updated)
 function generateUUID() {
     var d = new Date().getTime();
     var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;
@@ -143,6 +146,7 @@ var browserviewparents = {}
 var windows = {}
 var focusedtabperwindow = {}
 var tempsender = {}
+//Create a tab and return its UUID
 function createTab() {
     const uuid = generateUUID()
     const view = new BrowserView()
@@ -157,6 +161,7 @@ function createTab() {
     });
     return uuid
 }
+//Events being sent to ".tabrepresentative" dom elements
 const TabHandlers = {
     windowOpenHandler: function (details) {
         const tab = createTab()
@@ -190,12 +195,15 @@ const TabHandlers = {
         },
     }
 }
+//Destroy a tab with its UUID
 function destroyTab(uuid) {
     browserviews[uuid].webContents.destroy()
 }
+//Destroy a tab *calmly* with its UUID
 function closeTab(uuid) {
     browserviews[uuid].webContents.executeJavaScript("window.close()");
 }
+//Start rendering the tab from its UUID
 async function showTab(uuid) {
     Object.keys(browserviewparents).forEach(element => { if (browserviewparents[element] != browserviewparents[uuid]) return; hideTab(uuid) });
     browserviewparents[uuid].setBrowserView(browserviews[uuid])
@@ -205,23 +213,25 @@ async function showTab(uuid) {
         focusedtabperwindow[element] = browserviews[uuid]
     });
 }
+//Stop rendering the tab from its UUID
 function hideTab(uuid) {
     browserviewparents[uuid].removeBrowserView(browserviews[uuid])
 }
-
+//Stop rendering the tabs in a window from its UUID
 function stopRendering(windowuuid) {
     windows[windowuuid].removeBrowserView(focusedtabperwindow[windowuuid])
 }
+//Start rendering the last tab in a window from its UUID
 async function startRendering(windowuuid) {
     windows[windowuuid].setBrowserView(focusedtabperwindow[windowuuid])
     resizeViewport(windows[windowuuid], (await windows[windowuuid].webContents.executeJavaScript("onResize()")))
 }
+//Change the ownership of the tab
 async function moveTab(uuid, windowuuid) {
-    //if (browserviewparents[uuid] != undefined) browserviewparents[uuid].webContents.executeJavaScript("onResize()")
     browserviewparents[uuid] = windows[windowuuid]
-
     showTab(uuid)
 }
+//Resize a view to fit in window.
 function resizeViewport(window, locsize) {
     if (locsize == undefined) {
         var size = window.getSize();
@@ -246,6 +256,7 @@ function resizeViewport(window, locsize) {
     }
 
 }
+//resizeViewport is static and resizes immediately, this one animates it for 0.3s.
 async function animview(windowuuid) {
     var size = await windows[windowuuid].webContents.executeJavaScript("onResize()")
     var interval = setInterval(async function () {
@@ -298,7 +309,7 @@ const windowcontrol = {
             }
 
         } else {
-            //search word
+            //search the word on google or whatever user has set
         }
         if (local) {
             console.log(url)
@@ -319,6 +330,7 @@ const windowcontrol = {
         return { canGoBack: browserviews[uuid].webContents.canGoBack(), canGoForward: browserviews[uuid].webContents.canGoForward() }
     }
 }
+//Capture tab and convert it into a data uri
 async function captureTab(uuid, mono) {
     var answer
     try {
