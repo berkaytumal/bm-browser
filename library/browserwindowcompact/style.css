@@ -1,0 +1,779 @@
+@font-face {
+    font-family: Inter;
+    src: url(../fonts/Inter.ttf);
+}
+
+* {
+    font-family: "Segoe UI Variable Display";
+}
+
+body {
+    overflow: hidden;
+    background: transparent;
+    padding: 0px;
+    margin: 0px;
+}
+
+body.fullscreen #topbar {
+    background: var(--opaquebg);
+    --appbg: var(--opaquebg) !important;
+}
+
+body.fullscreen {
+    background: black;
+}
+
+body.fullscreen * {
+    -webkit-app-region: none !important;
+}
+
+html {}
+
+:root {
+    --tc: calc(var(--textcolor) * 255);
+    --tcr: calc(255 - var(--tc));
+    --easing: cubic-bezier(0.16, 1, 0.3, 1);
+    --tabclose: 0.5s var(--easing) forwards zoomout;
+    --tabopen: 0.5s var(--easing) forwards zoomin;
+    --msideflex: 1;
+    --tabheight: 30px;
+    --tabscale: 1;
+
+}
+
+@media (prefers-color-scheme: dark) {
+    body {}
+
+    :root {
+        --textcolor: 1;
+        --topbarbg: transparent;
+        --urlinputbg: transparent;
+        --tabbarbg: transparent;
+        --tabbg: rgba(255, 255, 255, 0.05);
+        --tabhoverbg: rgba(255, 255, 255, 0.075);
+        --tabselectedbg: rgb(255, 255, 255, 0.1);
+        --appbg: rgba(0, 0, 0, 0.2);
+        --titlebarbtnhover: rgb(0, 0, 0, 0.1);
+        --titlebarbtnpress: rgb(0, 0, 0, 0.2);
+        --titlebarclshover: #c42b1c;
+        --titlebarclspress: #AF2718;
+        --opaquebg: #202020;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+
+    :root {
+        --textcolor: 0;
+        --topbarbg: transparent;
+        --urlinputbg: transparent;
+        --tabbarbg: transparent;
+        --tabbg: rgb(0, 0, 0, 0.05);
+        --tabhoverbg: rgb(0, 0, 0, 0.025);
+        --tabselectedbg: rgb(255, 255, 255, 0);
+        --appbg: rgba(0, 0, 0, 0);
+        --titlebarbtnhover: rgb(0, 0, 0, 0.1);
+        --titlebarbtnpress: rgb(0, 0, 0, 0.2);
+        --titlebarclshover: #c42b1c;
+        --titlebarclspress: #AF2718;
+        --opaquebg: #f3f3f3;
+    }
+
+    .menubaricon,
+    #navbar img {
+        filter: invert() opacity(0.75);
+    }
+}
+
+#toppart {
+    transition: 0.3s ease-out;
+    width: 100%;
+    height: 200px;
+    height: min-content;
+}
+
+#toppart:hover {
+    transform: translateY(0px) !important;
+    margin-bottom: 0px !important;
+}
+
+#toppart:hover #tabbar:not(.hidden) {
+    margin-bottom: 0px;
+}
+
+.fullscreen #tabbar:not(.hidden) {
+    margin-bottom: -25px;
+}
+
+.fullscreen #tabbar {
+    pointer-events: none;
+}
+
+.fullscreen div.spacermargin,
+.fullscreen div.spacerfill,
+.fullscreen * {
+    -webkit-app-region: none !important;
+}
+
+.fullscreen #toppart {
+    transform: translateY(calc(-100% + 1px));
+    margin-bottom: -49px;
+}
+
+#topbar .lside *,
+#topbar .rside * {
+    -webkit-app-region: none;
+}
+
+
+
+#navbar {
+    -webkit-app-region: none;
+    position: fixed;
+    right: 0px;
+    top: 0px;
+    width: 138px;
+    height: 50px;
+    overflow: hidden;
+}
+
+#navbar div img {
+    pointer-events: none;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+}
+
+#navbar div {
+    float: left;
+    position: relative;
+    width: 46px;
+    height: 50px;
+}
+
+#navbar div:not(.close) {
+    --hover: rgb(255, 255, 255, 0.05);
+    --press: rgb(255, 255, 255, 0.1);
+    --hover: var(--titlebarbtnhover);
+    --press: var(--titlebarbtnpress);
+}
+
+#navbar div.close {
+    --hover: #c42b1c;
+    --press: #AF2718;
+    --hover: var(--titlebarclshover);
+    --press: var(--titlebarclspress);
+}
+
+#navbar div.close:active img,
+#navbar div.close:hover img {
+    filter: none !important;
+}
+
+#navbar div:hover {
+    background: var(--hover);
+}
+
+#navbar div:active {
+    background: var(--press);
+}
+
+#topbar {
+    transition: height 0.3s ease-out;
+    -webkit-app-region: drag;
+    background: var(--topbarbg);
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 50px;
+}
+
+body.fullscreen #topbar {
+    /* height: 0px;*/
+}
+
+#topbar .innercontent {
+    width: calc(100% - 138px);
+    height: 100%;
+    display: flex;
+
+}
+
+#topbar .lside,
+#topbar .mside,
+#topbar .rside {
+    display: flex;
+    position: relative;
+    float: left;
+    top: 0px;
+    height: 50px;
+    background: transparent !important;
+    flex-grow: 1;
+}
+
+#topbar .lside {
+    left: 0px;
+    width: min-content;
+}
+
+#topbar .mside {
+    transition: flex 0.3s;
+    left: 0px;
+    width: 500px;
+    flex-grow: calc((var(--msideflex) * 5) - 4.5);
+}
+
+#topbar .rside {
+    left: 0px;
+    width: min-content;
+    overflow: hidden;
+}
+
+#topbar .mside .urlinput {
+    overflow: hidden;
+    transition: 0.3s var(--easing);
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    border-style: none;
+    background: #2a2a2a;
+    background: var(--urlinputbg);
+    box-shadow: inset 0px 0px 2px rgb(125, 125, 125, 0.5);
+    color: rgba(var(--tc), var(--tc), var(--tc), 1);
+    outline: none;
+    text-align: left;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.tabrepresentative:not(:focus) .active .g-input {}
+
+.tabrepresentative.focus .g-favicon {
+    left: -30px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tabrepresentative.focus .active.g-input {
+    padding-left: 10px;
+    cursor: text !important;
+    opacity: 1;
+}
+
+.g-inputph {
+    padding-top: 3px !important;
+    font-size: 15px;
+    text-align: center !important;
+    background: transparent;
+    box-shadow: none;
+}
+
+.tabrepresentative.focus .active .g-input {
+    padding-left: 10px;
+    cursor: text !important;
+    opacity: 1;
+}
+
+.tabrepresentative:not(.focus) .active .g-input {
+
+    padding-left: 50% !important;
+    cursor: default !important;
+    opacity: 0;
+
+
+    pointer-events: none;
+}
+
+.tabrepresentative.focus .active .g-inputph {
+    text-indent: -70%;
+    opacity: 0;
+}
+
+.tabrepresentative:not(.focus) .active .g-inputph {
+    opacity: 1;
+}
+
+.tabrepresentative .g-favicon {
+    z-index: 10;
+
+    transition: 0.5s var(--easing);
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.tabrepresentative .g-favicon:hover {
+    background: rgb(255, 255, 255, 0.1);
+
+}
+
+.tabrepresentative .g-favicon:active {
+    transition: 0s;
+    opacity: 0.5;
+}
+
+.tabrepresentative .g-favicon .g-closetab,
+.tabrepresentative .g-favicon .favicon {
+    transition: opacity 0.3s;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 20px;
+    height: 20px;
+}
+
+.tabrepresentative:hover .g-favicon .g-closetab {
+    opacity: 1 !important;
+    pointer-events: all !important;
+}
+
+.tabrepresentative:hover .g-favicon .favicon {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.tabrepresentative .g-favicon .g-closetab {
+    background: url("../images/closetab.png");
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tabrepresentative .g-favicon .favicon {
+    opacity: 1;
+    transform: scale(0.9);
+}
+
+#topbar .lside button,
+#topbar .rside button {
+    transition: 0.3s ease-out;
+    position: relative;
+    width: 40px;
+    height: 30px;
+    outline: none;
+    border: none;
+    top: calc(50% - 15px);
+    color: rgb(var(--tc), var(--tc), var(--tc));
+    background: transparent;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+#topbar .lside button:hover,
+#topbar .rside button:hover {
+    /* background: rgba(var(--menubarnormal), 0.15);
+    box-shadow: 0px 0px 20px 20px rgba(255, 0, 0, 0), inset 0px 0px 0px 1px rgba(0, 0, 0, 0.07);*/
+}
+
+#topbar .lside button:active,
+#topbar .rside button:active {
+    transition: 0s;
+    opacity: 0.5;
+}
+
+#topbar .lside button.checked,
+#topbar .rside button.checked {
+    background: rgba(var(--menubarchecked), 0.6) !important;
+}
+
+.spacerfill {
+    -webkit-app-region: drag !important;
+    width: 10px;
+    flex: 1;
+}
+
+.spacermargin {
+    -webkit-app-region: drag !important;
+    width: 10px;
+}
+
+#tabbar::-webkit-scrollbar {
+    display: none;
+}
+
+#tabbar.linv:not(.rinv) {
+    -webkit-mask: linear-gradient(90deg, transparent 0%, white 50px);
+}
+
+#tabbar.rinv:not(.linv) {
+    -webkit-mask: linear-gradient(90deg, white calc(100% - 50px), transparent 100%);
+}
+
+#tabbar.rinv.linv {
+    -webkit-mask: linear-gradient(90deg, transparent 0%, white 50px, white calc(100% - 50px), transparent 100%);
+}
+
+#tabbar {
+    -webkit-app-region: none;
+    border-radius: 10px;
+    -webkit-mask-size: 100% 100%;
+    /*box-shadow: inset 0px 10px 10px -10px rgba(0, 0, 0, 0.2);*/
+    transition: height 0.3s ease-out;
+    display: flex;
+    flex-flow: row nowrap;
+    position: relative;
+    width: calc(100% + 10px);
+    height: 30px;
+    top: 10px;
+    background: var(--tabbarbg);
+    overflow-x: scroll;
+    overflow-y: hidden;
+    -webkit-mask: var(--mask);
+    scroll-snap-align: end;
+    /* inset 0px 10px 10px -10px rgba(0, 0, 0, 0.2);*/
+
+}
+
+body.fullscreen #tabbar {
+    /*height: 0px;*/
+}
+
+#tabbar.hidden {
+    /*height: 0px !important;*/
+}
+
+@keyframes tabopening {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+        flex: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+        flex: 2;
+    }
+}
+
+@keyframes tabopeningbg {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+        flex: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+        flex: 1;
+    }
+}
+
+@keyframes tabclosingbg {
+    from {
+        transform: scale(1);
+        opacity: 1;
+        flex: 1;
+    }
+
+    to {
+        transform: scale(0.7);
+        opacity: 0;
+        flex: 0;
+        width: 0px;
+        min-width: 0px;
+
+    }
+}
+
+@keyframes tabclosing {
+    from {
+        transform: scale(1);
+        opacity: 1;
+        flex: 2;
+    }
+
+    to {
+        transform: scale(0.7);
+        opacity: 0;
+        flex: 0;
+        width: 0px;
+        min-width: 0px;
+    }
+}
+
+#tabbar.draganim .tabrepresentative:not(.dragging) {
+    transition: transform 0.3s ease-out, background 0.3s;
+
+}
+
+
+#tabbar .tabrepresentative:not(.animate):not(.dragging):active {
+    transform: scale(0.95) !important;
+}
+
+#tabbar .tabrepresentative {
+    -webkit-app-region: none !important;
+    transition: 0.3s var(--easing);
+    position: relative;
+    min-width: 30px;
+    --t: rgba(255, 255, 255, 0.04);
+    --x: 1b1b1b;
+    flex: 1;
+    /*height: 100%;*/
+    height: calc(var(--tabheight) / var(--tabscale));
+    transform: scale(var(--tabscale));
+    text-align: center;
+    background: var(--x);
+    background: var(--tabbg);
+    /*width: var(--tabsize);*/
+    border-radius: 10px;
+    margin-right: 10px;
+    overflow: hidden;
+
+}
+
+#tabbar .tabrepresentative div.title,
+#tabbar .tabrepresentative div.active {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+#tabbar .tabrepresentative:not(.clickinside) div.title {
+    display: block;
+    pointer-events: all !important;
+}
+
+#tabbar .tabrepresentative:not(.clickinside) div.active {
+    display: none;
+    pointer-events: none;
+}
+
+#tabbar .tabrepresentative.clickinside div.title {
+    display: none;
+    pointer-events: none;
+}
+
+#tabbar .tabrepresentative.clickinside div.active {
+    display: block;
+    pointer-events: all !important;
+}
+
+#tabbar .tabrepresentative.created {
+    animation: tabopening 0.3s var(--easing);
+}
+
+#tabbar .tabrepresentative.dragging {
+    z-index: 101;
+    transition: all 0s, background 0.3s;
+}
+
+#tabbar .tabrepresentative.dragging:active {
+    background: rgb(255, 255, 255, 0.25) !important;
+
+}
+
+#tabbar .tabrepresentative.animate {
+    transition: transform 0.3s var(--easing);
+}
+
+#tabbar .tabrepresentative:hover {
+    background: var(--tabhoverbg);
+}
+
+/*
+#tabbar .tabrepresentative.selected::after {
+    content: "";
+    position: absolute;
+    border-radius: 10px 0px 0px 0px;
+    left: 100%;
+    top: 0px;
+    background: transparent;
+    box-shadow: -20px 0px 0px white;
+    width: 50px;
+    height: 25px;
+    pointer-events: none;
+}
+
+#tabbar .tabrepresentative.selected::before {
+    content: "";
+    position: absolute;
+    border-radius: 0px 10px 0px 0px;
+    left: calc(0% - 50px);
+    top: 0px;
+    background: transparent;
+    box-shadow: 20px 0px 0px white;
+    width: 50px;
+    height: 25px;
+    pointer-events: none;
+}
+*/
+#tabbar .tabrepresentative.selected {
+    /*position: sticky !important;
+    left: 0px;
+    right: 10px;*/
+    flex: 2;
+    box-shadow: none;
+    background: var(--tabselectedbg);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    min-width: 300px;
+
+}
+
+#tabbar .tabtitle {
+    color: rgb(var(--tc), var(--tc), var(--tc));
+    font-size: 15px;
+    margin: 4px;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    box-shadow: none !important;
+    text-overflow: ellipsis;
+    max-height: 30px;
+    white-space: nowrap;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+#browserview {
+    transition: 0.3s var(--easing);
+    height: 10px;
+    flex-grow: 1;
+    background: var(--appbg);
+}
+
+#tabsview::-webkit-scrollbar {
+    display: none;
+}
+
+#tabsview {
+    overflow: scroll;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+#tabsview .tabs {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+body[menu="browser"] #tabsview .tab:not(.selected) {
+    opacity: 0;
+}
+
+body[menu="tabsview"] #tabsview .tab {
+    opacity: 1;
+}
+
+#tabsview .tab {
+    position: relative;
+    --tranx: 0px;
+    --trany: 0px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s !important;
+    float: left;
+    width: 20%;
+    height: 20%;
+    border-radius: 10px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    margin: 10px;
+    padding: 0px;
+    --bg: white;
+    background: var(--bg);
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+#tabsview .tab.selected {
+    z-index: 99 !important;
+}
+
+
+@keyframes zoomin {
+    0% {
+        transform: translateX(0px) translateY(0px) scale(1);
+        border-radius: 10px;
+    }
+
+    100% {
+        transform: translateX(var(--tranx)) translateY(var(--trany)) scale(5);
+        border-radius: 0px;
+    }
+}
+
+@keyframes zoomout {
+    0% {
+        transform: translateX(var(--tranx)) translateY(var(--trany)) scale(5);
+        border-radius: 0px;
+    }
+
+    100% {
+        transform: translateX(0px) translateY(0px) scale(1);
+        border-radius: 10px;
+    }
+}
+
+#tabsview .tab:active img {
+    transform: scale(1.001);
+}
+
+img {
+    text-indent: -10000px
+}
+
+#tabsview .tab img {
+    -webkit-user-drag: none;
+    position: relative;
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+#tabsview .tab:active {
+    transition: 0.1s;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+    transform: scale(0.95) !important;
+}
+
+#appcontent {
+    display: flex;
+    flex-flow: column nowrap;
+    width: 100%;
+    height: 100%;
+}
+
+#g-back .menubaricon,
+#g-forward .menubaricon,
+#g-refresh .menubaricon {
+    transform: translateX(-50%) translateY(-50%) scale(1.2);
+}
+
+.menubaricon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%) scale(1.5);
+    opacity: 0.9;
+    width: calc(30% + 10px);
+    -webkit-user-drag: none;
+}
+
+* {
+    user-select: none;
+}

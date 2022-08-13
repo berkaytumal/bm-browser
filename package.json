@@ -1,0 +1,26 @@
+{
+  "name": "bm-browser",
+  "version": "0.0.1",
+  "description": "Bm Browser is a modern looking Chromium browser targeted to run on Windows machines. Bm is just a placeholder name so I would be more than happy if you have any suggestion.",
+  "main": "main.js",
+  "scripts": {
+    "test": "electron main.js --unhandled-rejections=strict --trace-warnings",
+    "start": "electron main.js"
+  },
+  "author": "wellitsucks",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wellitsucks/bm-browser.git"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "electron-acrylic-window": "^0.5.11",
+    "ewc": "github:23phy/ewc",
+    "jquery": "^3.6.0",
+    "request": "^2.88.2",
+    "timing-function": "^0.2.3"
+  },
+  "devDependencies": {
+    "electron": "^19.0.9"
+  }
+}
