@@ -1,5 +1,5 @@
 const path = require('path');
-const { app, BrowserView, ipcMain, nativeTheme } = require('electron')
+const { app, BrowserView, ipcMain, nativeTheme, BrowserWindow } = require('electron')
 //const { BrowserWindow } = require("electron-acrylic-window")
 //const composition = require("ewc");
 const request = require('request').defaults({ encoding: null });
@@ -42,7 +42,7 @@ function createWindow() {
         window.show();
     });
     window.setMenuBarVisibility(false)
-    window.loadFile("library/browserwindowcompact/index.html")
+    window.loadFile("library/browserwindow/index.html")
     window.on('resize', async function () {
         if (window.isFullScreen()) { window.webContents.executeJavaScript("onFullscreen(true)") } else {
             window.webContents.executeJavaScript("onFullscreen(false)")
